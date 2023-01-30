@@ -1,15 +1,11 @@
 import {
-  Card,
-  Page,
-  Layout,
-  Tabs,
-  IndexTable,
-  useIndexResourceState,
-  Button
+  Card, Layout, Tabs, IndexTable, useIndexResourceState, Button, Spinner
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useState, useCallback, useEffect } from 'react';
 import React from 'react';
+import { Link } from 'react-router-dom';
+import './style.css'
 
 const apiUrl = 'https://wirth-hats.onrender.com/api';
 
@@ -19,6 +15,7 @@ export default function HomePage() {
   const [Accept, setAccept] = useState([])
   const [Deny, setDeny] = useState([])
   const [update, setUpdate] = useState(false)
+  const [loading, setloading] = useState(true)
 
   const handleTabChange = useCallback(
     (selectedTabIndex) => setSelected(selectedTabIndex),
@@ -93,6 +90,7 @@ export default function HomePage() {
         setAll(Allcustomer)
         setAccept(Acceptcustomer)
         setDeny(Denystomer)
+        setloading(false)
       })
   }, [update]);
 
@@ -114,58 +112,64 @@ export default function HomePage() {
           selected={selectedResources.includes(id)}
           position={index}
         >
-          <IndexTable.Cell>{firstName}</IndexTable.Cell>
-          <IndexTable.Cell>{lastName}</IndexTable.Cell>
-          <IndexTable.Cell>{address}</IndexTable.Cell>
+          <IndexTable.Cell><Link to={`detail?id=${id}`} style={{ textDecoration: 'none' }}><div className="uppercase">{firstName} {lastName}</div></Link></IndexTable.Cell>
+          <IndexTable.Cell><div className="uppercase">{address}</div></IndexTable.Cell>
           <IndexTable.Cell>{birthday}</IndexTable.Cell>
           <IndexTable.Cell>{email}</IndexTable.Cell>
-          <IndexTable.Cell>{gender}</IndexTable.Cell>
+          <IndexTable.Cell><div className="uppercase">{gender}</div></IndexTable.Cell>
           <IndexTable.Cell>{telephone}</IndexTable.Cell>
           <IndexTable.Cell>
-            {status === 'accepted' &&
-              <Button
-                disabled
-                dataPrimaryLink
-                onClick={() => counsellingAccept(id)}
-              >
-                Accept
-              </Button>
-            }
+            <div style={{ display: 'flex' }}>
+              {status === 'accepted' &&
+                <div className="mr-5">
+                  <Button
+                    disabled
+                    primary
+                    dataPrimaryLink
+                  >
+                    Accept
+                  </Button>
+                </div>
+              }
 
-            {status !== 'accepted' &&
-              <Button
-                dataPrimaryLink
-                onClick={() => counsellingAccept(id)}
-              >
-                Accept
-              </Button>
-            }
+              {status !== 'accepted' &&
+                <div className="mr-5">
+                  <Button
+                    className="mr-5"
+                    primary
+                    dataPrimaryLink
+                    onClick={() => counsellingAccept(id)}
+                  >
+                    Accept
+                  </Button>
+                </div>
+              }
 
-            {status === 'denied' &&
-              <Button
-                disabled
-                dataPrimaryLink
-                onClick={() => counsellingDeny(id)}
-              >
-                Deny
-              </Button>
-            }
+              {status === 'denied' &&
+                <Button
+                  disabled
+                  dataPrimaryLink
+                >
+                  Deny
+                </Button>
+              }
 
 
-            {status !== 'denied' &&
-              <Button
-                dataPrimaryLink
-                onClick={() => counsellingDeny(id)}
-              >
-                Deny
-              </Button>
-            }
+              {status !== 'denied' &&
+                <Button
+                  dataPrimaryLink
+                  onClick={() => counsellingDeny(id)}
+                >
+                  Deny
+                </Button>
+              }
+            </div>
           </IndexTable.Cell>
         </IndexTable.Row>
       ),
     );
 
-    const counsellingAccept = (id) => {
+    const counsellingAccept = async (id) => {
       for (let i = 0; i < customers.length; i++) {
         if (customers[i].id === id) {
           var sendValue = customers[i];
@@ -178,13 +182,13 @@ export default function HomePage() {
             body: JSON.stringify(sendValue)
           };
 
-          fetch(`${apiUrl}/updateInfo/${id}`, requestOptions)
+          await fetch(`${apiUrl}/updateInfo/${id}`, requestOptions)
+          setUpdate(!update)
         }
       }
-      setUpdate(!update)
     }
 
-    const counsellingDeny = (id) => {
+    const counsellingDeny = async (id) => {
       for (let i = 0; i < customers.length; i++) {
         if (customers[i].id === id) {
           var sendValue = customers[i];
@@ -197,11 +201,10 @@ export default function HomePage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sendValue)
           };
-          // console.log(sendValue)
-          fetch(`${apiUrl}/updateInfo/${id}`, requestOptions)
+          await fetch(`${apiUrl}/updateInfo/${id}`, requestOptions)
+          setUpdate(!update)
         }
       }
-      setUpdate(!update)
     }
 
     return (
@@ -214,8 +217,7 @@ export default function HomePage() {
           }
           onSelectionChange={handleSelectionChange}
           headings={[
-            { title: 'FirstName' },
-            { title: 'LastName' },
+            { title: 'Name' },
             { title: 'Address' },
             { title: 'Birthday' },
             { title: 'Email' },
@@ -231,19 +233,20 @@ export default function HomePage() {
   }
 
   return (
-    <Page narrowWidth>
+    <div className="p-20">
       <TitleBar title="Wirth-hats" primaryAction={null} />
       <Layout>
         <Layout.Section>
           <Card>
             <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
               <Card.Section>
-                <TabPane />
+                {loading && <div style={{ textAlign: 'center' }}><Spinner accessibilityLabel="Spinner example" size="large" /></div>}
+                {!loading && <TabPane />}
               </Card.Section>
             </Tabs>
           </Card>
         </Layout.Section>
       </Layout>
-    </Page>
+    </div>
   );
 }

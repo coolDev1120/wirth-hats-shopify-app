@@ -1,0 +1,38 @@
+.mr-5 {
+    margin-right: 5px;
+}
+
+.p-20 {
+    padding: 20px;
+}
+
+.setting-btns {
+    text-align: right;
+    width: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.status .Polaris-ButtonGroup {
+    justify-content: center;
+}
+
+.mainLink .Polaris-ButtonGroup {
+    justify-content: right;
+}
+
+.address {
+    border-top: 1px solid;
+}
+
+.mb-12 {
+    margin-bottom: 12px;
+}
+
+.bold {
+    font-weight: 500;
+}
+
+.uppercase {
+    text-transform: capitalize;
+}
